@@ -42,4 +42,5 @@
         <item name="android:dropDownSelector">@android:color/darker_gray</item>
         <!-- Add more attributes as needed -->
     </style>
+
 </resources>
