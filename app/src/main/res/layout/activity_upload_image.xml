@@ -96,6 +96,14 @@
             app:backgroundTint="@null"
             tools:ignore="VisualLintButtonSize" />
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_marginTop="25dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
     </LinearLayout>
 
 </ScrollView>

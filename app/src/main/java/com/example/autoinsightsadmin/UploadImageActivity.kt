@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +35,7 @@ class UploadImageActivity : AppCompatActivity() {
 
     private val PICK_IMAGE_REQUEST = 1
     private lateinit var fetchedImageView: ImageView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +46,7 @@ class UploadImageActivity : AppCompatActivity() {
         sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         fetchedImageView = findViewById(R.id.fetched)
+        progressBar = findViewById(R.id.progressBar)
         val proceedButton: Button = findViewById(R.id.proceedbtn)
 
         proceedButton.setOnClickListener {
@@ -84,16 +87,20 @@ class UploadImageActivity : AppCompatActivity() {
     }
 
     private fun uploadImageToFirebase(imageUri: Uri) {
+        progressBar.visibility = ProgressBar.VISIBLE
+
         val storageReference = FirebaseStorage.getInstance().reference.child("plans.png")
         val uploadTask = storageReference.putFile(imageUri)
 
         uploadTask.addOnSuccessListener {
             storageReference.downloadUrl.addOnSuccessListener { uri ->
+                progressBar.visibility = ProgressBar.GONE
                 showToast("Image Uploaded Successfully")
                 // Update the ImageView with the new image URL
                 Glide.with(this).load(uri).into(fetchedImageView)
             }
         }.addOnFailureListener {
+            progressBar.visibility = ProgressBar.GONE
             showToast("Failed to upload image")
         }
     }
