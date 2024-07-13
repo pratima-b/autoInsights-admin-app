@@ -1,6 +1,8 @@
 package com.example.autoinsightsadmin
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.InputType
 import android.widget.Button
@@ -12,6 +14,20 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.google.firebase.firestore.FirebaseFirestore
 
 class AdminLoginActivity : AppCompatActivity() {
+    private lateinit var sharedPreferences: SharedPreferences
+    private val PREFS_NAME = "loginPrefs"
+    private val IS_LOGGED_IN = "isLoggedIn"
+
+    var firstPressTime: Long = 0
+
+    override fun onBackPressed() {
+        if (firstPressTime + 2000 > System.currentTimeMillis()) {
+            finishAffinity()  // This will close all activities and exit the app
+        } else {
+            Toast.makeText(baseContext, "Press Back again to Exit", Toast.LENGTH_SHORT).show()
+        }
+        firstPressTime = System.currentTimeMillis()
+    }
 
     private lateinit var showHide: ImageView
     private lateinit var usernameEditText: EditText
@@ -23,8 +39,18 @@ class AdminLoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_admin_login)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
-        showHide = findViewById<ImageView>(R.id.showHide) //
-        showHide.setOnClickListener{
+        sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+        // Check if the user is already logged in
+        if (sharedPreferences.getBoolean(IS_LOGGED_IN, false)) {
+            val intent = Intent(this, UploadImageActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
+
+        showHide = findViewById<ImageView>(R.id.showHide)
+        showHide.setOnClickListener {
             togglePasswordVisibility()
         }
 
@@ -48,9 +74,11 @@ class AdminLoginActivity : AppCompatActivity() {
                     val adminUsername = document.getString("username")
                     val adminPassword = document.getString("password")
                     if (username == adminUsername && password == adminPassword) {
+                        sharedPreferences.edit().putBoolean(IS_LOGGED_IN, true).apply()
                         val intent = Intent(this, UploadImageActivity::class.java)
                         startActivity(intent)
                         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                        finish()
                     } else {
                         showToast("Authentication failed")
                     }

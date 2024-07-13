@@ -1,6 +1,8 @@
 package com.example.autoinsightsadmin
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.InputType
 import android.widget.Button
@@ -11,7 +13,23 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.firebase.firestore.FirebaseFirestore
 
+
 class ProfileActivity : AppCompatActivity() {
+
+    private lateinit var sharedPreferences: SharedPreferences
+    private val PREFS_NAME = "loginPrefs"
+    private val IS_LOGGED_IN = "isLoggedIn"
+
+    var firstPressTime: Long = 0
+
+    override fun onBackPressed() {
+        if (firstPressTime + 2000 > System.currentTimeMillis()) {
+            finishAffinity()  // This will close all activities and exit the app
+        } else {
+            Toast.makeText(baseContext, "Press Back again to Exit", Toast.LENGTH_SHORT).show()
+        }
+        firstPressTime = System.currentTimeMillis()
+    }
 
     private lateinit var currentPassword: EditText
     private lateinit var newPassword: EditText
@@ -27,6 +45,8 @@ class ProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         setContentView(R.layout.activity_profile)
+
+        sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         currentPassword = findViewById(R.id.currentPassword)
         newPassword = findViewById(R.id.newPassword)
@@ -100,6 +120,7 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun logoutUser() {
+        sharedPreferences.edit().putBoolean(IS_LOGGED_IN, false).apply()
         val intent = Intent(this, AdminLoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)

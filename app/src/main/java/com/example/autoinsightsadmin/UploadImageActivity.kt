@@ -1,6 +1,8 @@
 package com.example.autoinsightsadmin
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
@@ -15,6 +17,21 @@ import com.google.firebase.storage.FirebaseStorage
 
 class UploadImageActivity : AppCompatActivity() {
 
+    private lateinit var sharedPreferences: SharedPreferences
+    private val PREFS_NAME = "loginPrefs"
+    private val IS_LOGGED_IN = "isLoggedIn"
+
+    var firstPressTime: Long = 0
+
+    override fun onBackPressed() {
+        if (firstPressTime + 2000 > System.currentTimeMillis()) {
+            finishAffinity()  // This will close all activities and exit the app
+        } else {
+            Toast.makeText(baseContext, "Press Back again to Exit", Toast.LENGTH_SHORT).show()
+        }
+        firstPressTime = System.currentTimeMillis()
+    }
+
     private val PICK_IMAGE_REQUEST = 1
     private lateinit var fetchedImageView: ImageView
 
@@ -23,6 +40,8 @@ class UploadImageActivity : AppCompatActivity() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         enableEdgeToEdge()
         setContentView(R.layout.activity_upload_image)
+
+        sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         fetchedImageView = findViewById(R.id.fetched)
         val proceedButton: Button = findViewById(R.id.proceedbtn)
@@ -93,8 +112,7 @@ class UploadImageActivity : AppCompatActivity() {
     }
 
     private fun logoutUser() {
-        // Clear any stored user session or authentication tokens if necessary
-
+        sharedPreferences.edit().putBoolean(IS_LOGGED_IN, false).apply()
         // Redirect to AdminLoginActivity
         val intent = Intent(this, AdminLoginActivity::class.java)
         // Clear the back stack to prevent navigating back to the UploadImageActivity
@@ -103,5 +121,4 @@ class UploadImageActivity : AppCompatActivity() {
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         finish()
     }
-
 }
